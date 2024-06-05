@@ -14,4 +14,4 @@ Icon*
 *.dat
 *.csv
 *.lyt
-# *.Rdata
+*.Rdata
