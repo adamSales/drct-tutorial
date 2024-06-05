@@ -1,0 +1,16 @@
+.Rproj.user
+.Rhistory
+*.DS_Store
+.Rapp.history
+Icon*
+
+# large files
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.xlsx
+*.html
+*.dat
+*.csv
+*.lyt
