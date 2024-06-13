@@ -34,6 +34,17 @@ covs_ms <- covs_ms %>%
          perc_stud_api = CPETPACP_67, perc_stud_white = CPETWHIP_67,
          perc_stud_alp = CPETSPEP_67, perc_stud_bil = CPETBILP_67, perc_stud_tag = CPETGIFP_67) %>%
   select(CAMPUS, GRDSPAN, starts_with("pre"),all_of(var.names.clean$var_clean), everything())
+
+covs_ms_noprep <- covs_ms_noprep %>%
+  rename(all_stud_n = CPETALLC_67, grade8_n = CPETG08C_67, stud_teach_rat = CPSTKIDR_67,
+         all_exp = CPFPAALLT_67, inst_exp = CPFEAINSP_67, lead_exp = CPFEAADSP_67, supp_exp = CPFEASUPP_67,
+         ed_aide = CPSETOFC_67, teach_salary = CPSTTOSA_67, 
+         teach_expr = CPSTEXPA_67, perc_teach_female = CPSTFEFP_67,
+         perc_teach_white = CPSTWHFP_67, perc_teach_black = CPSTBLFP_67, perc_teach_hisp = CPSTHIFP_67,
+         perc_stud_black = CPETBLAP_67, perc_stud_hisp = CPETHISP_67, 
+         perc_stud_api = CPETPACP_67, perc_stud_white = CPETWHIP_67,
+         perc_stud_alp = CPETSPEP_67, perc_stud_bil = CPETBILP_67, perc_stud_tag = CPETGIFP_67) %>%
+  select(CAMPUS, GRDSPAN, starts_with("pre"),all_of(var.names.clean$var_clean), everything())
 ```
 
 ```{r, echo = F}
@@ -42,7 +53,6 @@ var.names.clean %>%
                      align = "lll", format = "html") %>% 
   row_spec(row = 0, align = "c", bold=T) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
-
 ```
 
 ## Form Fake/Example Paired RCT
@@ -54,26 +64,31 @@ This results in 146 pairs of schools based on their previous 8th grade Math TAKS
 ```{r}
 set.seed(25)
 
+poss_rct <- covs_ms_noprep %>%
+  filter(!is.na(grade8_n)) %>%
+  select(CAMPUS) %>%
+  left_join(covs_ms)
+
 # create a random grouping to be able to do bipartite matching
-covs_ms$Z <- sample(0:1, nrow(covs_ms), replace = T)
+poss_rct$Z <- sample(0:1, nrow(poss_rct), replace = T)
 
 # calculate distances between schools
 dist_mat <- match_on(Z ~ premA + premB + premF + all_stud_n + stud_teach_rat + all_exp + 
                        perc_teach_white + perc_stud_hisp + 
-                       perc_stud_alp + perc_stud_bil, data = covs_ms, caliper = 1)
+                       perc_stud_alp + perc_stud_bil, data = poss_rct, caliper = 1)
 summary(dist_mat)
 
 # exclude distances outside of the caliper
-initialmatch <- fullmatch(dist_mat, data = covs_ms)
+initialmatch <- fullmatch(dist_mat, data = poss_rct)
 excl <- which(is.na(initialmatch))
 
 # and recalculate distances
 dist.update <- match_on(Z ~ premA + premB + premF + all_stud_n + stud_teach_rat + all_exp + 
                        perc_teach_white + perc_stud_hisp + 
-                       perc_stud_alp + perc_stud_bil, dat = covs_ms[-excl,]) 
+                       perc_stud_alp + perc_stud_bil, dat = poss_rct[-excl,]) 
 
 # final optimal pair matching
-fakematch <- pairmatch(dist.update,  data = covs_ms)
+fakematch <- pairmatch(dist.update,  data = poss_rct)
 summary(fakematch)
 ```
 
@@ -86,10 +101,12 @@ match.ids <- unique(fakematch[which(!is.na(fakematch))])
 rct.ids <- sample(match.ids, 25)
 ```
 
-Randomly assign one school within each pair to receive treatment and save RCT information.
+Randomly assign one school within each pair to receive treatment `Tr` and save RCT information. We also include a Bernoulli randomized treatment assignment `TrBern` (ignoring pairs).
 
 ```{r}
-rct <- covs_ms %>%
+set.seed(73)
+
+rct <- poss_rct %>%
   select(CAMPUS) %>%
   mutate(match = fakematch) %>%
   filter(match %in% rct.ids) %>%
@@ -103,8 +120,14 @@ rct <- covs_ms %>%
                names_to = c(".value","k"),
                names_pattern = "(.*)(1|2)") %>%
   select(CAMPUS, match, k, Tr) %>%
-  arrange(match, k)
+  ungroup() %>%
+  arrange(match, k) %>%
+  left_join(select(covs_ms_noprep, CAMPUS, clust_size = CPETG08C_78))
 
+rct$TrBern = sample(0:1, 50, replace = T)
+```
+
+```{r}
 save(rct, file = "../data/rct_schools.Rdata")
 ```
 
@@ -116,21 +139,36 @@ rct %>%
   select(-k) %>%
   kable(format = "html") %>% 
   kable_styling(bootstrap_options = c("striped", "hover","condensed"))
-
 ```
+
+## Rename Outcomes for Clarity
+
+The outcome data consists of variables representing the **8th grade math TAKS passing rates** for different subgroups of students and two different school years. The variables follow the naming structure `outm[A][08]` where `[A]` takes the values of A, B, H, W, M, F, and E which indicate subgroups as in the table below and `[08]` takes the value of 08 or 09, indicating the 2007/8 or 2008/9 school years.
+
+For this tutorial, we will focus on the overall `A`, 2008 `08` math TAKS passing rate, so we rename that column `taks08`, but leave the remaining variable names as-is, if you would like to explore.
+
+```{r}
+out_ms <- out_ms %>%
+  rename(taks08 = outmA08) %>%
+  select(CAMPUS, taks08, everything())
+```
+
+
 
 ## Save Cleaned Data
 
 ```{r}
-covs_rct = covs_ms %>%
-  filter(CAMPUS %in% rct$CAMPUS)
-covs_aux = covs_ms %>%
-  filter(!(CAMPUS %in% rct$CAMPUS))
+rct_dat = rct %>%
+  left_join(out_ms, by = "CAMPUS") %>%
+  left_join(covs_ms, by = "CAMPUS") %>%
+  select(CAMPUS, GRDSPAN, match, k , Tr, TrBern, taks08, starts_with("pre"), 
+         all_of(var.names.clean$var_clean), everything(), -Z)
 
-out_rct = rct %>%
-  left_join(out_ms, by = "CAMPUS")
-out_aux = out_ms %>%
-  filter(!(CAMPUS %in% rct$CAMPUS))
+aux_dat = out_ms %>%
+  filter(!(CAMPUS %in% rct$CAMPUS)) %>%
+  left_join(covs_ms, by = "CAMPUS") %>%
+  select(CAMPUS, GRDSPAN, taks08, starts_with("pre"), 
+         all_of(var.names.clean$var_clean), everything(), -Z)
 
-save(out_rct, covs_rct, out_aux, covs_aux, file = "../data/rct_aux_dat.Rdata")
+save(rct_dat, aux_dat, covs_ms_noprep, file = "../data/rct_aux_dat.Rdata")
 ```
