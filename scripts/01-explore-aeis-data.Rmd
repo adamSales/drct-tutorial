@@ -1,0 +1,45 @@
+---
+title: "Explore AEIS Data"
+author: "Charlotte Mann"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyr)
+library(kableExtra)
+```
+
+## Load Data
+
+Load data cleaned in `00-data-setup.Rmd`
+
+```{r}
+load("../data/rct_aux_dat.Rdata")
+load("../data/rct_schools.Rdata")
+```
+
+## Data Overview
+
+`rct_aux_dat.Rdata` contains 3 data frames:
+
+- `aux_dat`
+- `rct_dat`
+
+- `covs_ms_noprep`: Covariates for all middle schools with no scaling or handling of missing values.
+
+## Explore RCT Data
+
+```{r}
+head(out_rct)
+```
+```{r}
+summary(out_rct$outmA08)
+summary(out_aux$outmA08)
+
+
+summary(out_rct$outmA09)
+summary(out_aux$outmA09)
+```

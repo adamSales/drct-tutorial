@@ -1,0 +1,85 @@
+---
+title: "Treatment Effect Estimation with dRCT"
+author: "Charlotte Mann"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyr)
+library(kableExtra)
+library(devtools)
+```
+
+## Load Data
+
+Load data cleaned in `00-data-setup.Rmd`
+
+```{r}
+load("../data/rct_aux_dat.Rdata")
+load("../data/rct_schools.Rdata")
+```
+
+## Install `dRCT' package
+
+```{r}
+if(!("dRCT" %in% installed.packages())) install_github("manncz/dRCT/dRCT")
+library(dRCT)
+```
+
+## Estimate the ATE with Bernoulli Randomized Trails (LOOP)
+
+Let's start only adjusting by the 2007 overall math TAKS passing rate `premA` using OLS for LOO potential outcome imputation.
+
+```{r}
+loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = rct_dat$premA, pred = loop_ols)
+```
+
+Now, we can adjust with all covariates using Random Forest.
+
+First, we need to carefully only chose pre-treatment covariates to adjust with.
+```{r}
+covMat = rct_dat %>%
+  select(-CAMPUS, -GRDSPAN, -match, -k, -Tr, -TrBern, -taks08, -clust_size) %>%
+  select(!starts_with("out"))
+```
+
+
+Then, we can input our matrix of pre-treatment covariates into the loop function:
+```{r}
+loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = covMat, pred = loop_rf)
+```
+
+Compare these to the difference in means estimator.
+
+```{r}
+summary(lm(taks08 ~ TrBern, data = rct_dat))
+```
+
+## Estimate the ATE with a Paired Trial (P-LOOP)
+
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, Z = rct_dat$premA, P = rct_dat$match, pred = p_ols_interp)
+```
+
+
+
+Difference in Means: 
+
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match)
+```
+
+## Estimate the ATE with a Paired Cluster Randomized Trial (IDPD)
+
+
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, Z = rct_dat$premA, P = rct_dat$match, pred = p_ols_interp,
+       n = rct_dat$clust_size)
+```
+
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match, pred = p_ols_interp, n = rct_dat$clust_size)
+```
