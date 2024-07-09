@@ -2,7 +2,8 @@
 title: "AEIS Data Example -- Generating a Synthetic RCT"
 author: "Charlotte Mann"
 date: "`r Sys.Date()`"
-output: html_document
+output: github_document
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -49,7 +50,7 @@ covs_ms_noprep <- covs_ms_noprep %>%
 ```{r, echo = F}
 var.names.clean %>%
   kable(col.names = c("Original Variable", "Variable Description", "Clean Name"),
-                     align = "lll", format = "html") %>% 
+                     align = "lll") %>% 
   row_spec(row = 0, align = "c", bold=T) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 ```
@@ -136,7 +137,7 @@ Example Paired RCT schools:
 ```{r, echo = F}
 rct %>%
   select(-k) %>%
-  kable(format = "html") %>% 
+  kable() %>% 
   kable_styling(bootstrap_options = c("striped", "hover","condensed"))
 ```
 
@@ -161,13 +162,13 @@ rct_dat = rct %>%
   left_join(out_ms, by = "CAMPUS") %>%
   left_join(covs_ms, by = "CAMPUS") %>%
   select(CAMPUS, GRDSPAN, match, k , Tr, TrBern, taks08, starts_with("pre"), 
-         all_of(var.names.clean$var_clean), everything(), -Z)
+         all_of(var.names.clean$var_clean), everything())
 
 aux_dat = out_ms %>%
   filter(!(CAMPUS %in% rct$CAMPUS)) %>%
   left_join(covs_ms, by = "CAMPUS") %>%
   select(CAMPUS, GRDSPAN, taks08, starts_with("pre"), 
-         all_of(var.names.clean$var_clean), everything(), -Z)
+         all_of(var.names.clean$var_clean), everything())
 
 save(rct_dat, aux_dat, covs_ms_noprep, file = "../data/rct_aux_dat.Rdata")
 ```
