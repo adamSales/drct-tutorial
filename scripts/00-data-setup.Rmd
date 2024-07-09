@@ -1,6 +1,11 @@
 ---
 title: "AEIS Data Example -- Generating a Synthetic RCT"
 date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "compiled_tutorials";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
 output: github_document
 always_allow_html: true
 ---

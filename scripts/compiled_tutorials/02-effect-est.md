@@ -67,7 +67,7 @@ loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = covMat, pred = loop_rf)
 ```
 
     ##        Estimate Std. Error  t value Pr(>|t|)
-    ## ATE: -0.9198244  2.5415978 -0.36191  0.71904
+    ## ATE: -0.9625235  2.5405829 -0.37886  0.70651
 
 ### Difference in Means Estimator (LOOP with mean imputation)
 
