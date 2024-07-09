@@ -4,7 +4,11 @@
 .Rapp.history
 Icon*
 
-# large files
+# input data which are large
+data/*.Rdata
+input/*.Rdata
+
+# other large files
 *.pdf
 *.jpg
 *.jpeg
@@ -12,6 +16,4 @@ Icon*
 *.xlsx
 *.html
 *.dat
-*.csv
 *.lyt
-*.Rdata
