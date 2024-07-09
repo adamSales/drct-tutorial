@@ -1,0 +1,22 @@
+﻿var,var_full,var_clean
+CPETALLC_67,Total Students (n),all_stud_n
+CPETG08C_67,Total 8th Grade Students,grade8_n
+CPSTKIDR_67,Student:Teacher Ratio ,stud_teach_rat
+CPFPAALLT_67,All Expenditures (\$),all_exp
+CPFEAINSP_67,Expenditures % Instruction,inst_exp
+CPFEAADSP_67,Expenditures  % School Leadership,lead_exp
+CPFEASUPP_67,Expenditures % Support Services,supp_exp
+CPSETOFC_67,Educational Aides (n),ed_aide
+CPSTTOSA_67,Average Teacher Base Salary (\$),teach_salary
+CPSTEXPA_67,Average Teacher Experience (years),teach_expr
+CPSTWHFP_67,Teachers % White,perc_teach_white
+CPSTBLFP_67,Teachers % Black,perc_teach_black
+CPSTHIFP_67,Teachers % Hispanic,perc_teach_hisp
+CPSTFEFP_67,Teachers % Female,perc_teach_female
+CPETWHIP_67,Students % White,perc_stud_white
+CPETBLAP_67,Students % Black,perc_stud_black
+CPETHISP_67,Students % Hispanic,perc_stud_hisp
+CPETPACP_67,Students % Asian and Pacific Islander,perc_stud_api
+CPETSPEP_67,Students % Assisted Learning Program,perc_stud_alp
+CPETBILP_67,Students % Bilingual Program,perc_stud_bil
+CPETGIFP_67,Students % Gifted and Talented Program,perc_stud_tag
