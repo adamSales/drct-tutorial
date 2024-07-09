@@ -1,8 +1,8 @@
 ---
 title: "Explore AEIS Data"
-author: "Charlotte Mann"
 date: "`r Sys.Date()`"
-output: html_document
+output: github_document
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -30,21 +30,153 @@ load("../data/rct_schools.Rdata")
 
 ## Data Overview
 
+### Source
+
+We will be using data from the Academic Excellence Indicator System [AEIS](https://rptsvr1.tea.texas.gov/perfreport/aeis/2008/DownloadData.html) provided by the Texas Education Agency. This is aggregated school-level data which includes information such as student passing rates on standardized tests, school finances, student demographics, and teacher demographics. 
+
+### Synthetic RCT Design
+
+While inspired by a real field trial in Texas middle and high schools, we have created an artificial RCT for this workshop from the ~1450 middle schools in the AEIS data due to data privacy considerations. For our RCT, we imagine that a math curricular intervention for 8th graders was randomized to the RCT schools to implement in the 2007/2008 school year.  We pair matched 50 schools based on information from the 2006/2007 school year to make up our RCT (see `00-data-setup.Rmd` for details). For the sake of this tutorial, we generated both a Bernoilli randomized treatment assignment `TrBern` and a pair randomized treatment assignment `Tr` for these RCT schools.  
+
+### Outcomes and Covariates
+
+We are interested in assessing the effect of the curricular intervention on the 8th grade passing rate on a math standardized test (TAKS) in 2008 `taks08`.  We also have the 2008 and 2009 TAKS math passing rates for different subgroups of students (as discussed below).
+
+It is common in educational trials to have access to a pretest score. We we will use the TAKS math passing rate in 2007 as a pretest score `premA`. We also have the 2007 TAKS math passing rates for different subgroups of students (as discussed below).
+
+There are thousands of available covariates from the 2003/4 to the 2006/7 school years in the data. The year of the variable is indicated with a suffix such as `_34` for the 2003/4 school year. We include some school information from the 2007/8 school year since it could still be considered to be pre-treatment. We gave a handful of covariates descriptive names for matching and exploratory purposes, which are all from the 2006/7 school year. 
+
+For the primary data that we will use, we scaled the covariates and filled any missing values with the column mean. We also added columns indicating the pattern of missing values in each column (these have the names of the original columns with the suffix `_mis`).
+
+### Cleaned Data Files
+
 `rct_aux_dat.Rdata` contains 3 data frames:
 
-- `aux_dat`
-- `rct_dat`
-
-- `rct`
-
+- `rct_dat`: Full processed data for 50 RCT schools with covariates and outcome and RCT information.
+- `aux_dat`: Full processed data for 1418 middle schools in Texas, not included in the RCT (auxiliary schools).
 - `covs_ms_noprep`: Covariates for all middle schools with no scaling or handling of missing values.
 
-## Explore RCT Data
+`rct_schools.Rdata` contains 1 data frame:
+
+- `rct`: Information about the RCT design.
+
+## Explore RCT Information
+
+`rct` includes information about the RCT design including the following columns:
+- `match`: pair match identifier
+- `k`: arbitrary labeling of one school as the first or second school in a pair
+- `Tr`: paired random treatment assignment
+- `clust_size`: number of 8th graders in the school, which we will consider to be the cluster size
+- `TrBern`: Bernoilli (non-paired) treatment assignment
 
 ```{r}
-head(rct)
+head(rct) %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
 ```
+
+All of these columns are included in `rct_dat` as well.
+
+## Outcome and Covariates
+
+`aux_dat` and `rct_dat` contain the same outcome and covariate information. 
+
+
+### Outcome
+
+The primary outcome we will focus on is the all 8th grade students math TAKS passing rate in 2008 `taks08`. We also have information on the 2009 TAKS passing rates and the rates for different subsets of 8th grade students. The columns follow this naming structure `outm[SUBGROUP]0[8/9]`. Columns ending in `_na` indicate if the specified outcome is missing for that school.  We do not scale the outcome variables.
+
 ```{r}
-summary(rct_dat$taks08)
-summary(aux_dat$taks08)
+rct_dat %>%
+  select(CAMPUS, taks08, starts_with("outm")) %>%
+  slice(1:10) %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
+```
+Here is the key for the given subgroups in the outcome data:
+
+| Code |   Subgroup   |
+|------|--------------|
+|   A  | All Students |
+|   B  | Black        |
+|   E  | Low SES      |
+|   F  | Female       |
+|   H  | Hispanic     |
+|   M  | Male         |
+|   W  | White        |
+
+### Pretest
+
+The pretest score is the 2007 8th grade math TAKS passing rate, which we similarly have available for different subsets of 8th grade students. The pretest scores are scaled and missing values are imputed in `aux_dat` and `rct_dat`. These columns use the naming structure `prem[SUBGROUP]` where `premA` indicates all 8th grade students.
+
+```{r}
+rct_dat %>%
+  select(CAMPUS, starts_with("prem")) %>%
+  slice(1:10) %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
+```
+If you want to look at original values, you can use `covs_ms_noprep`:
+
+```{r}
+covs_ms_noprep %>%
+  select(CAMPUS, starts_with("prem")) %>%
+  slice(1:10) %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
+```
+
+### Selected Covariates
+
+The `covs_ms_noprep` data frame could be useful for just checking out original values of the covariates, since it includes no processing. Here are the covariates from the 2006/7 school year that we used in matching and gave interpretable names:
+
+```{r}
+covs_ms_noprep %>%
+  select(CAMPUS, all_stud_n:perc_stud_tag) %>%
+  slice(1:10) %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
+```
+And here is what the scaled versions look like:
+
+```{r}
+aux_dat %>%
+  select(CAMPUS, all_stud_n:perc_stud_tag) %>%
+  slice(1:10) %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
+```
+### Additional Covariates
+
+There are thousands of additional covariates available, for which we keep the original names in the raw AEIS data. You can review the AEIS [data documentation](https://rptsvr1.tea.texas.gov/perfreport/aeis/2008/xplore/aeisref.html) for the meanings of column names. 
+
+As mentioned previously, in the processed data, we handle missing values with mean imputation and add columns indicating whether a value was missing in the original data. For example:
+
+```{r}
+rct_dat %>%
+  select(CAMPUS, starts_with("CH311TS06R_67")) %>%
+  slice(1:10) %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
+```
+You can see that for originally missing values, the original column `CH311TS06R_67` takes the value of `0.00` and the missing value indicator column `CH311TS06R_67_mis` takes the value of `1`.
+
+## Comparison of RCT and Auxiliary Schools
+
+You may be interested in doing some poking around to see how similar or different the RCT schools and auxiliary Texas schools are to each other. 
+
+Here are some summaries of baseline variables split by the RCT and Auxiliary schools:
+
+```{r}
+covs_ms_noprep %>%
+  mutate(school_type = case_when(CAMPUS %in% rct$CAMPUS ~ "RCT",
+                                  TRUE ~ "Auxiliary")) %>%
+  select(CAMPUS, school_type, premA, all_stud_n:perc_stud_tag) %>%
+  pivot_longer(premA:perc_stud_tag, names_to = "var", values_to = "val") %>%
+  group_by(school_type, var) %>%
+  summarize(mean = mean(val, na.rm = T), sd = sd(val, na.rm = T) ,min = min(val, na.rm = T), 
+            max = max(val, na.rm = T)) %>%
+  arrange(var) %>%
+  kable(digits = 2) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover","condensed"))
 ```

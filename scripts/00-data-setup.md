@@ -1,6 +1,5 @@
 AEIS Data Example – Generating a Synthetic RCT
 ================
-Charlotte Mann
 2024-07-09
 
 ## Load Data
@@ -35,6 +34,8 @@ covs_ms_noprep <- covs_ms_noprep %>%
          perc_stud_alp = CPETSPEP_67, perc_stud_bil = CPETBILP_67, perc_stud_tag = CPETGIFP_67) %>%
   select(CAMPUS, GRDSPAN, starts_with("pre"),all_of(var.names.clean$var_clean), everything())
 ```
+
+Here are descriptions of the variables that we will use in matching:
 
 <table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -1284,6 +1285,16 @@ different school years. The variables follow the naming structure
 `outm[A][08]` where `[A]` takes the values of A, B, H, W, M, F, and E
 which indicate subgroups as in the table below and `[08]` takes the
 value of 08 or 09, indicating the 2007/8 or 2008/9 school years.
+
+| Code | Subgroup     |
+|------|--------------|
+| A    | All Students |
+| B    | Black        |
+| E    | Low SES      |
+| F    | Female       |
+| H    | Hispanic     |
+| M    | Male         |
+| W    | White        |
 
 For this tutorial, we will focus on the overall `A`, 2008 `08` math TAKS
 passing rate, so we rename that column `taks08`, but leave the remaining
