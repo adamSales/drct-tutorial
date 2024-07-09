@@ -1,0 +1,163 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+This notebook will guide you through the process of estimating a treatment effect from a randomized A/B test, using the new `dRCT` package in `R`.
+
+## Preliminaries
+
+### Step 0: Install the `dRCT` package (only do this once)
+
+The package only needs to be installed once--after that you can skip this step
+
+```{r}
+if(!require(devtools)) install.packages('devtools')
+if(!require(dRCT)) devtools::install_github("manncz/dRCT")
+```
+
+### Step 1: Load in the package
+
+(run this line each time you start `R`)
+
+```{r}
+library(dRCT)
+```
+
+### Step 2: Load and Explore the Dataset
+
+```{r}
+abdat <- read.csv('../abTestExample.csv')
+```
+
+You may want to use one or more of these functions to explore the dataset's structure:
+
+```{r}
+View(abdat) ## opens a new tab in Rstudio
+dim(abdat) ## the dimension of the datset (rows, columns)
+names(abdat) ## variable names
+head(abdat) ## first 6 rows
+```
+
+### Step 3: Extract the necessary variables from the dataset
+
+To estimate effects from a Bernoulli RCT, you really only need two variables:
+
+1.  Treatment (the exposure, intervention, etc.)
+2.  Outcome (What the the treatment is supposed to affect)
+
+Extract the treatment variable from the dataset:
+
+```{r}
+# put something like Tr = abdat$variable 
+# (for instance, if the variable name is "inter" then put Tr = abdat$inter)
+Tr= abdat$video
+```
+
+Extract the outcome variable:
+
+```{r}
+# put something like Y = abdat$variable (e.g. Y= abdat$outcome)
+Y = abdat$completion
+```
+
+### Interlude
+
+With these two variables, you can estimate the average effect using a t-test:
+
+```{r}
+print(TTest <- t.test(Y~Tr))
+```
+
+the estimate is:
+
+```{r}
+TTest$estimate[2]-TTest$estimate[1]
+```
+
+with a standard error:
+
+```{r}
+TTest$stderr
+```
+
+The `loop()` function without covariates gives you the same answer:
+
+```{r}
+loop(Y=Y,Tr=Tr)
+```
+
+### Covariates
+
+To get a precise answer, you'll want to use baseline covariates
+
+Extract the covariates: identify which columns of the data matrix are baseline covariates, and create a new matrix or dataframe with only those columns. You can identify the columns numerically, like:
+
+```         
+covariates=abdat[,c(2,3,7,8)] ## for columns 2, 3, 7, 8
+```
+
+or
+
+```         
+covariates=abdat[,5:9] ## for columns 5,6,7,8,9
+```
+
+by name:
+
+```         
+covariates = abdat[,c("var1","var2","var3")]
+```
+
+or using regular expressions:
+
+```         
+covariates = abdat[,grep("pattern",names(abdat))]
+```
+
+```{r}
+# put your code here
+covariates= abdat[,2:10]
+# or
+covariates= abdat[,grep('student_prior',names(abdat))]
+```
+
+## Estimate an effect
+
+One more ingredient is necessary to estimate effects from a Bernoulli RCT: the probability of a unit being assigned to the treatment condition. In this case, $Pr(Tr_i=1)=0.5$.
+
+Then, to estimate effects, use the `loop()` function:
+
+```{r}
+est_loop=loop(Y=Y, Tr=Tr,Z=covariates,p=0.5)
+```
+
+To see the estimate, standard error, and a p-value testing the null hypothesis of no average effect, use `print()`:
+
+```{r}
+print(est_loop)
+```
+
+The `confint()` function gives confidence intervals:
+
+```{r}
+confint(est_loop)
+```
+
+## Incorporating Auxiliary Data
+
+Identify the predictions:
+
+```{r}
+yhat = abdat$completion_prediction
+```
+
+```{r}
+est_reloop <- loop(Y=Y,Tr=Tr,Z=covariates,pred=reloop,yhat=yhat)
+
+
+print(est_reloop)
+confint(est_reloop)
+```
