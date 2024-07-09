@@ -1,20 +1,21 @@
 ---
-title: "Treatment Effect Estimation with dRCT"
-author: "Charlotte Mann"
+title: "Treatment Effect Estimation with `dRCT` Package"
 date: "`r Sys.Date()`"
-output: html_document
+output: github_document
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 #install packages if not already installed
-needed.packages <- c("dplyr", "devtools")
+needed.packages <- c("dplyr", "tidyr", "devtools")
 new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
 #load required packages
 library(dplyr)
+library(tidyr)
 library(devtools)
 ```
 
@@ -27,7 +28,7 @@ load("../data/rct_aux_dat.Rdata")
 load("../data/rct_schools.Rdata")
 ```
 
-## Install `dRCT' package
+## Install `dRCT` package
 
 ```{r}
 if(!("dRCT" %in% installed.packages())) install_github("manncz/dRCT")
@@ -36,13 +37,22 @@ library(dRCT)
 
 ## Estimate the ATE with Bernoulli Randomized Trails (LOOP)
 
-Let's start only adjusting by the 2007 overall math TAKS passing rate `premA` using OLS for LOO potential outcome imputation.
+We are interested in estimating the effect of a new 8th grade math curriculum on the 2008 8th grade math TAKS passing rates. We identify the outcome variable in the data as `taks08`. 
+
+First, we will treat the our synthetic RCT as a Bernoilli randomized trial and analyze it using LOOP ([Wu \& Gagnon-Bartsch, 2018](https://doi.org/10.1177/0193841X18808003)). The treatment assignment vector is `TrBern`.
+
+### LOOP with OLS imputation
+
+Let's start only adjusting by the 2007 overall math TAKS passing rate `premA` using OLS for LOO potential outcome imputation. Therefore, we will set the parameter `Z = rct_dat$premA`. To use OLS imputation we choose `pred = loop_ols`.
 
 ```{r}
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = rct_dat$premA, pred = loop_ols)
 ```
 
-Now, we can adjust with all covariates using Random Forest.
+
+### LOOP with Random Forest imputation
+
+Now, we can adjust with all covariates using random forest.
 
 First, we need to carefully only chose pre-treatment covariates to adjust with.
 ```{r}
@@ -52,39 +62,158 @@ covMat = rct_dat %>%
 ```
 
 
-Then, we can input our matrix of pre-treatment covariates into the `loop` function. This can take a couple of seconds to run.
+Then, we can input our matrix of pre-treatment covariates into the `loop()` function for the `Z` parameter. To impute using random forests, we choose  `pred = loop_rf`. 
+
+This can take a couple of seconds to run. 
 ```{r}
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = covMat, pred = loop_rf)
 ```
 
-Compare these to the difference in means estimator. This estimator is the estimated coefficient and standard error for `TrBern` in the following OLS regression:
+### Difference in Means Estimator (LOOP with mean imputation)
+
+We can compare these estimates to the difference-in-means estimator (in other words, to a t-test). To calculate the difference in means estimator, you can either leave the covariate parameter `Z` empty in the `loop()` function:
 
 ```{r}
-summary(lm(taks08 ~ TrBern, data = rct_dat))
+loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern)
 ```
 
+choose `pred = loop_mean`:
+
+```{r}
+loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, pred=loop_mean)
+```
+
+or calculate directly with other functions in `R`. Below, we show how to do so with the `lm` function. 
+
+The difference in means estimator is equivalent to the estimated coefficient an OLS model of the outcome on the treatment assignment:
+
+```{r}
+dmout <- lm(taks08 ~ TrBern,data = rct_dat)
+summary(dmout)
+
+# extract estimates 
+est <- dmout$coefficients["TrBern"]
+sderr <- sqrt(vcov(dmout)["TrBern","TrBern"])
+```
+
+```{r, echo = F}
+paste0("Estimate: ", round(est,4))
+paste0("Standard Error: ", round(sderr, 4))
+```
+
+**Note:** The standard error estimate from the `loop()` function is $\frac{N}{N-1}$ times the standard standard error used in a t-test as seen above where $N$ is the number of units in the trial. 
+
 ## Estimate the ATE with a Paired Trial (P-LOOP)
+
+Next, we will treat the synthetic RCT as a paired trial. The `p_loop()` function implements the P-LOOP estimator ([Wu \& Gagnon-Bartsch, 2021](https://doi.org/10.3102/1076998620941469)). 
+
+We identify the pair indicator as `match` and the treatment assignment vector as `Tr`. 
+
+### P-LOOP with OLS imputation
+
+We can estimate the ATE using OLS to impute potential outcomes, adjusting with only the pretest score `premA`. There are three options to chose from for OLS imputation: `p_ols_po`, `p_ols_v12`, and `p_ols_interp`. We will use `p_ols_interp` here because it interpolates between the other two options, automatically determining the optimal method for the data.
 
 ```{r}
 p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, Z = rct_dat$premA, P = rct_dat$match, pred = p_ols_interp)
 ```
 
+### P-LOOP with Random Forest imputation
 
+The same options are available for imputing potential outcomes with random forests (`p_rf_po`, `p_rf_v12`, `p_rf_interp`) with `p_loop()`. 
 
-Difference in Means: 
+### Difference in Means Estimator
+
+As with the Bernoilli randomized experiment, there are number of different ways to calculate the difference in means estimator and corresponding standard error in `R`.
+
+First, using the `p_loop()` function, either don't include any covariates (`Z = NULL`):
 
 ```{r}
 p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match)
 ```
 
-## Estimate the ATE with a Paired Cluster Randomized Trial (IDPD)
+or explicitly specify `pred = p_loomi`:
 
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match, pred = p_loomi)
+```
+
+You can use the OLS to calculate the difference-in-means *point* estimator as we did for the Bernoilli trial above, however the standard error will not take the paried randomization into account. 
+
+Below we will calculate the point estimator and a common design-based standard error estimate ([Imai, 2008](https://onlinelibrary.wiley.com/doi/10.1002/sim.3337)) directly. You can also use the `ATEnocov` function in the `experiment` package in `R`, which we won't show here for the sake of not installing an additional package.
+
+First, we will rearrange the data to calculate the difference between the treatment (`Y1`) and control outcomes (`Y0`)  within each pair:
+```{r}
+paired.dat <- rct_dat %>%
+  select(P = match, Tr, taks08) %>%
+  pivot_wider(values_from = taks08, names_from = Tr,
+              names_prefix = "Y") %>%
+  mutate(dif = Y1 - Y0)
+
+paired.dat
+```
+
+The difference in means estimator is the mean of these differences and the standard error is proportional to the standard deviation of the paired differences:
+
+```{r}
+M <- nrow(paired.dat)
+est = mean(paired.dat$dif)
+sderr = sqrt(1/(M*(M-1))*sum((paired.dat$dif - mean(paired.dat$dif))^2))
+```
+
+
+```{r, echo = F}
+paste0("Estimate: ", round(est,4))
+paste0("Standard Error: ", round(sderr, 4))
+```
+
+**Note:** The standard error estimate from the `p_loop()` function is $\frac{M}{M-1}$ times the typical design-based standard error used for the difference-in-means estimator ([Imai, 2008](https://onlinelibrary.wiley.com/doi/10.1002/sim.3337)) as seen above where $M$ is the number of pairs in the trial. 
+
+## Estimate the individual ATE with a Paired Cluster-Randomized Trial (IDPD)
+
+Above, we estimated the average treatment effect on the *schools* in our RCT. If we want to estimate the average treatment effect for *students* in the RCT, we want to treat it as a paired *cluster*-randomized trial (pCRT). The `p_loop()` function allows you to add cluster sizes for each unit in the trial with the `n` parameter. 
+
+We identify the variable `clust_size` as our cluster sizes.
+
+### Design-Based Covariate Adjustment with OLS or Random Forest imputation for pCRTs
+
+The `p_loop` syntax is exactly the same, just specifying `n = rct_dat$clust_size`:
 
 ```{r}
 p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, Z = rct_dat$premA, P = rct_dat$match, pred = p_ols_interp,
        n = rct_dat$clust_size)
 ```
 
+As an additional feature for pCRTs, you can also specify if you would like the imputation models to be weighted themselves by `n` by setting `weighted_imp = TRUE`:
+
 ```{r}
-p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match, pred = p_ols_interp, n = rct_dat$clust_size)
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, Z = rct_dat$premA, P = rct_dat$match, pred = p_ols_interp,
+       n = rct_dat$clust_size, weighted_imp = TRUE)
 ```
+
+We see this improves the standard error somewhat, because the imputation model is prioritizing predicting the outcomes well for the larger schools.
+
+### Design-Based Estimation with No Covariates for pCRTs
+
+You can use the `p_loop()` function to estimate the individual ATE without covariate adjustment as well. When cluster sizes differ within pairs, using leave-one-out mean imputation results in a different estimator than the difference in means estimator ([Mann, Sales, \& Gagnon-Bartsch, 2024](https://arxiv.org/abs/2407.01765)). 
+
+You can use leave-one-out (un-weighted) mean imputation by not including any covariates `Z` and/or by specifying `pred = p_loomi`:
+
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match, n = rct_dat$clust_size, pred = p_loomi)
+```
+Adding `weighted_imp = TRUE` specifies that the mean imputation should be weighted by `n`.
+
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match, n = rct_dat$clust_size, pred = p_loomi,
+       weighted_imp = TRUE)
+```
+
+
+For mean imputation, you can also specify that you want to use data from all pairs for imputation (rather than leave-one-out imputation) with `loo = FALSE`. Specifying `weighted_imp = TRUE` as well returns the difference-in-means *point* estimator:
+
+```{r}
+p_loop(Y = rct_dat$taks08, Tr = rct_dat$Tr, P = rct_dat$match, n = rct_dat$clust_size, pred = p_loomi,
+       weighted_imp = TRUE, loo = FALSE)
+```
+
+**Note:** However, in this case, the estimate standard error tends to be anti-conservative. See ([Mann, Sales, \& Gagnon-Bartsch, 2024](https://arxiv.org/abs/2407.01765)) for detailed discussion of design based estimators without covariate adjustment for pCRTs.
