@@ -1,8 +1,6 @@
 ---
-title: "R Notebook"
-output:
-  html_document:
-    df_print: paged
+title: "Estimating Effects from a Bernoulli Experiment: Solutions"
+output: html_notebook
 ---
 
 This notebook will guide you through the process of estimating a treatment effect from a randomized A/B test, using the new `dRCT` package in `R`.
@@ -41,6 +39,8 @@ names(abdat) ## variable names
 head(abdat) ## first 6 rows
 ```
 
+More information on the dataset is available [here](https://github.com/manncz/edm-rct-tutorial/blob/main/data/ABexampleDataDictionary.md).
+
 ### Step 3: Extract the necessary variables from the dataset
 
 To estimate effects from a Bernoulli RCT, you really only need two variables:
@@ -69,6 +69,8 @@ With these two variables, you can estimate the average effect using a t-test:
 
 ```{r}
 print(TTest <- t.test(Y~Tr))
+
+
 ```
 
 the estimate is:
@@ -148,16 +150,99 @@ confint(est_loop)
 
 ## Incorporating Auxiliary Data
 
-Identify the predictions:
+### Step 1: Gather auxiliary data and analogous experimental data
 
+The file "auxiliaryLogData.csv" has data for a separate group of students who worked on a problem set similar to the one featured in the RCT. The dataset includes assignment-level student performance measurements for the previous five assignments each student worked on, along with student-level averages.
 ```{r}
-yhat = abdat$completion_prediction
+aux_logdata <- read.csv('../auxiliaryLogData.csv')
+```
+The dataset "rctLogData.csv" includes the same predictors for the students in the RCT:
+```{r}
+rct_logdata <- read.csv('../rctLogData.csv')
 ```
 
-```{r}
-est_reloop <- loop(Y=Y,Tr=Tr,Z=covariates,pred=reloop,yhat=yhat)
+### Step 2: Train a prediction algorithm 
+Use the auxiliary dataset to train a prediction algorithm, predicting `completion` as a function of the predictors.
 
+Here, you may use any algorithm you want--you may even use the auxiliary data to compare the results of several algorithms and then choose between them or ensemble them. 
+
+In fact, the `SuperLearner` package does that all for you, so we'll use that. You may need to install it, but that should go quickly:
+```{r}
+if(!require(SuperLearner)) install.packages('SuperLearner')
+library(SuperLearner)
+```
+
+The way `SuperLearner` works is that you provide a matrix or dataframe of predictors, `X`, and outcome `Y`, and a list of candidate prediction algorithms. To see the built-in options, run:
+```{r}
+listWrappers()
+```
+
+Choose your favorite algorithms from this list (bear in mind, some may require you to install yet more packages, and/or take a long time to run -- ahem, `SL.nnet`)
+
+For instance, say we want to try regression, ridge regression, and 
+a fast version of random forest called `ranger` (which may need to be installed). Then run:
+```{r}
+if(!require(ranger)) install.packages('ranger')
+algs <- c('SL.lm','SL.ridge','SL.ranger')
+```
+Go ahead and edit that code, and re-run, if you want to try something different!
+
+Then train the model using the auxiliary data:
+```{r}
+X <- aux_logdata
+X$completion <- NULL
+
+auxmod <- SuperLearner(Y=aux_logdata$completion,X=X,SL.library=algs)
+```
+
+The SuperLearner uses cross-validation to weight the candidate algorithms:
+```{r}
+auxmod
+```
+
+
+### Step 3: Get predictions for RCT students
+
+Now, use the model from step 2 to generate predicted outcomes for the students in the RCT.
+Here we'll use the `rct_logdata` dataset.
+Note that we've conveniently arranged things so that the rows are in the right order:
+```{r}
+all.equal(rct_logdata$user_id, abdat$user_id)
+```
+To keep things simple, we'll remove that column:
+```{r}
+rct_logdata$user_id <- NULL
+```
+With a SuperLearner model, getting predictions is straightforward:
+
+```{r}
+yhat <- predict(auxmod,rct_logdata)
+yhat <- yhat$pred[,1]
+```
+
+### Step 3: Use `loop`, along with the Auxiliary predictions, to estimate effects
+
+The call is the same as before, except we use the `reloop` prediction algorithm, and 
+include `yhat` as an additional argument:
+```{r}
+est_reloop <- loop(Y = Y, Tr = Tr, Z=covariates,p=0.5, pred = reloop, yhat=yhat)
 
 print(est_reloop)
 confint(est_reloop)
 ```
+
+
+To replicate the result in [this JEDM article](https://jedm.educationaldatamining.org/index.php/JEDM/article/view/646),
+first load in the predictions from that fancy-schmancy deep neural net:
+
+```{r}
+yhat_nn <- read.csv('../data/yhatNN.csv')[,1]
+```
+Then re-run the estimation routine:
+```{r}
+est_reloop <- loop(Y = Y, Tr = Tr, Z=covariates,p=0.5, pred = reloop, yhat=yhat_nn)
+
+print(est_reloop)
+confint(est_reloop)
+```
+

@@ -1,10 +1,10 @@
 library(tidyverse)
 
-print(load('../ethenExperiments/data/pairwiseData.RData'))
+print(load('../../ethenExperiments/data/pairwiseData.RData'))
 
 ## print(load('../ethenExperiments/results/contrasts.RData'))
 
-## print(load('../ethenExperiments/results/resTotalFast.RData'))
+print(load('../../ethenExperiments/results/resTotalFast.RData'))
 
 ## Contrasts <- filter(Contrasts,model=='combined')
 
@@ -75,13 +75,15 @@ final <- combined[[139]]$ps[1]
 
 dat <- datPW%>%filter(problem_set==final,model=='combined')
 
+yhatNN <- dat$completion_prediction
+write.csv(yhatNN,file = "data/yhatNN.csv",row.names = FALSE)
+
 dat <- dat%>%
+  mutate(video=Z==1)%>%
   select(
     user_id,
     starts_with("student_prior"),
-    T=Z,
-    complete=completion_target,
-    Yhat=completion_prediction)
+    video,
+    completion=completion_target)
 
-save(dat,file='abTestData.RData')
-write_csv(dat,'abTestExample.csv')
+write_csv(abdat,'abTestExample.csv')
