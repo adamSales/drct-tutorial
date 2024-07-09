@@ -7,6 +7,13 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+#install packages if not already installed
+needed.packages <- c("dplyr", "tidyr", "kableExtra")
+new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+#load required packages
 library(dplyr)
 library(tidyr)
 library(kableExtra)
@@ -28,18 +35,16 @@ load("../data/rct_schools.Rdata")
 - `aux_dat`
 - `rct_dat`
 
+- `rct`
+
 - `covs_ms_noprep`: Covariates for all middle schools with no scaling or handling of missing values.
 
 ## Explore RCT Data
 
 ```{r}
-head(out_rct)
+head(rct)
 ```
 ```{r}
-summary(out_rct$outmA08)
-summary(out_aux$outmA08)
-
-
-summary(out_rct$outmA09)
-summary(out_aux$outmA09)
+summary(rct_dat$taks08)
+summary(aux_dat$taks08)
 ```

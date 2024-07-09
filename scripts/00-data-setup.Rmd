@@ -17,9 +17,8 @@ library(kableExtra)
 
 ```{r}
 load("../input/MS_data_public.Rdata")
-var.names.clean <- read.csv("../data/var_names.csv")
+var.names.clean <- read.csv("../input/var_names.csv")
 ```
-
 
 ## Clean some variable names for interpretability
 

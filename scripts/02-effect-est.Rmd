@@ -7,9 +7,14 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+#install packages if not already installed
+needed.packages <- c("dplyr", "devtools")
+new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+#load required packages
 library(dplyr)
-library(tidyr)
-library(kableExtra)
 library(devtools)
 ```
 
@@ -25,7 +30,7 @@ load("../data/rct_schools.Rdata")
 ## Install `dRCT' package
 
 ```{r}
-if(!("dRCT" %in% installed.packages())) install_github("manncz/dRCT/dRCT")
+if(!("dRCT" %in% installed.packages())) install_github("manncz/dRCT")
 library(dRCT)
 ```
 
@@ -47,12 +52,12 @@ covMat = rct_dat %>%
 ```
 
 
-Then, we can input our matrix of pre-treatment covariates into the loop function:
+Then, we can input our matrix of pre-treatment covariates into the `loop` function. This can take a couple of seconds to run.
 ```{r}
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = covMat, pred = loop_rf)
 ```
 
-Compare these to the difference in means estimator.
+Compare these to the difference in means estimator. This estimator is the estimated coefficient and standard error for `TrBern` in the following OLS regression:
 
 ```{r}
 summary(lm(taks08 ~ TrBern, data = rct_dat))
