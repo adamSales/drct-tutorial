@@ -1,5 +1,5 @@
 ---
-title: "Treatment Effect Estimation with `dRCT` Package"
+title: "RCT Treatment Effect Estimation with `dRCT` Package"
 date: "`r Sys.Date()`"
 knit: (function(inputFile, encoding) {
       out_dir <- "compiled_tutorials";
@@ -17,8 +17,9 @@ knitr::opts_chunk$set(echo = TRUE)
 needed.packages <- c("dplyr", "tidyr", "devtools")
 new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
+```
 
-#load required packages
+```{r,message = FALSE}
 library(dplyr)
 library(tidyr)
 library(devtools)
@@ -34,6 +35,8 @@ load("../data/rct_schools.Rdata")
 ```
 
 ## Install `dRCT` package
+
+The `dRCT` package is currently hosted on Github at [manncz/dRCT](https://github.com/manncz/dRCT). To install it, use the `install_github()` function from the `devtools` package.
 
 ```{r}
 if(!("dRCT" %in% installed.packages())) install_github("manncz/dRCT")
@@ -69,8 +72,9 @@ covMat = rct_dat %>%
 
 Then, we can input our matrix of pre-treatment covariates into the `loop()` function for the `Z` parameter. To impute using random forests, we choose  `pred = loop_rf`. 
 
-This can take a couple of seconds to run. 
+Use `set.seed()` to have a reproducible results if using random forests to impute potential outcomes. This can take a couple of seconds to run. 
 ```{r}
+set.seed(483)
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = covMat, pred = loop_rf)
 ```
 

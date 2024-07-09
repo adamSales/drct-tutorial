@@ -1,6 +1,12 @@
-Treatment Effect Estimation with `dRCT` Package
+RCT Treatment Effect Estimation with `dRCT` Package
 ================
 2024-07-09
+
+``` r
+library(dplyr)
+library(tidyr)
+library(devtools)
+```
 
 ## Load Data
 
@@ -12,6 +18,10 @@ load("../data/rct_schools.Rdata")
 ```
 
 ## Install `dRCT` package
+
+The `dRCT` package is currently hosted on Github at
+[manncz/dRCT](https://github.com/manncz/dRCT). To install it, use the
+`install_github()` function from the `devtools` package.
 
 ``` r
 if(!("dRCT" %in% installed.packages())) install_github("manncz/dRCT")
@@ -60,14 +70,16 @@ Then, we can input our matrix of pre-treatment covariates into the
 `loop()` function for the `Z` parameter. To impute using random forests,
 we choose `pred = loop_rf`.
 
-This can take a couple of seconds to run.
+Use `set.seed()` to have a reproducible results if using random forests
+to impute potential outcomes. This can take a couple of seconds to run.
 
 ``` r
+set.seed(483)
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = covMat, pred = loop_rf)
 ```
 
     ##        Estimate Std. Error  t value Pr(>|t|)
-    ## ATE: -0.9625235  2.5405829 -0.37886  0.70651
+    ## ATE: -0.8674415  2.5358446 -0.34207  0.73381
 
 ### Difference in Means Estimator (LOOP with mean imputation)
 
