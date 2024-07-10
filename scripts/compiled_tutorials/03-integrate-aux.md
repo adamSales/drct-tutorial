@@ -1,7 +1,7 @@
 Treatment Effect Estimation Integrating Auxiliary Data with `dRCT`
 Package
 ================
-Charlotte Mann
+2024-07-10
 
 ``` r
 library(dplyr)
@@ -131,18 +131,25 @@ loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z =rct_dat$yhat, pred = loop_ols)
     ## ATE: -0.3246524  2.1979000 -0.14771  0.88331
 
 Using the `pred = reloop` option, it will automatically determine
-whether to use predictions based on the auxiliary predictions `yhat`, or
-any RCT covariates that you give it in `Z`. So here, we specifiy
-`yhat = rct_dat$yhat` and sepearately `Z = rct_dat$premA`, the pretest
-score.
+whether to impute potential outcomes using `yhat`, or any RCT covariates
+that you give it in `Z`.
 
-*need to fix something in the package for this to run*
+So here, we specifiy `yhat = rct_dat$yhat` and separately
+`Z = rct_dat$premA`, the pretest score:
 
 ``` r
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = rct_dat$premA, yhat = rct_dat$yhat, pred = reloop)
 ```
 
-These are more efficient than using the presest score alone:
+    ##        Estimate Std. Error  t value Pr(>|t|)
+    ## ATE: -0.3264075  2.1989998 -0.14843  0.88274
+
+Given what we saw above, it makes sense that these point and standard
+error estimates are similar to just adjusting with the auxiliary
+predictions.
+
+And we can confirm that incorporating auxiliary information is more
+efficient than using the pretest score alone:
 
 ``` r
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z =rct_dat$premA, pred = loop_ols)

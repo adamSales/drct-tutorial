@@ -1,6 +1,6 @@
 ---
 title: "Treatment Effect Estimation Integrating Auxiliary Data with `dRCT` Package"
-author: "Charlotte Mann"
+date: "`r Sys.Date()`"
 knit: (function(inputFile, encoding) {
       out_dir <- "compiled_tutorials";
       rmarkdown::render(inputFile,
@@ -114,15 +114,18 @@ The first option is to simply use the auxiliary predictions `yhat` as a covariat
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z =rct_dat$yhat, pred = loop_ols)
 ```
 
-Using the `pred = reloop` option, it will automatically determine whether to use predictions based on the auxiliary predictions `yhat`, or any RCT covariates that you give it in `Z`. So here, we specifiy `yhat = rct_dat$yhat` and sepearately `Z = rct_dat$premA`, the pretest score.
+Using the `pred = reloop` option, it will automatically determine whether to impute potential outcomes using `yhat`, or any RCT covariates that you give it in `Z`. 
 
-*need to fix something in the package for this to run*
-```{r, eval = F}
+So here, we specifiy `yhat = rct_dat$yhat` and separately `Z = rct_dat$premA`, the pretest score:
+
+```{r}
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = rct_dat$premA, yhat = rct_dat$yhat, pred = reloop)
 ```
 
+Given what we saw above, it makes sense that these point and standard error estimates are similar to just adjusting with the auxiliary predictions. 
 
-These are more efficient than using the presest score alone:
+
+And we can confirm that incorporating auxiliary information is more efficient than using the pretest score alone:
 
 ```{r}
 loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z =rct_dat$premA, pred = loop_ols)
