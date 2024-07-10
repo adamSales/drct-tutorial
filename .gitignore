@@ -4,11 +4,8 @@
 .Rapp.history
 Icon*
 
-# input data which are large
-data/*.Rdata
-input/*.Rdata
 
-# other large files
+# large files
 *.pdf
 *.jpg
 *.jpeg

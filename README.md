@@ -10,7 +10,7 @@ The tutorial focuses on how to use the current version of the `dRCT` package in 
 The contents are organized as follows:
 
 - `data/`: processed data files and documentation
-  - `ABexampleDataDictionary.md`: data dictionary for A/B test data ASSISSTMENTS
+  - `README.md`: data dictionaries
   - A/B example data:
     - `abTestExample.csv`
     - `auxiliaryLogData.csv`
@@ -19,9 +19,8 @@ The contents are organized as follows:
   - Field test example data (AEIS) outputted by `00-data-setup.Rmd`:
     - `rct_aux_dat.Rdata`
     - `rct_schools.Rdata`
-- `input/`: unprocessed data files
-  - `README.md`: instructions for downloading AEIS data
-  - `MS_data_public.Rdata`
+- `input/`: input data files
+  - `MS_data_public.Rdata`: AEIS data from [manncz/aeis-aux-rct/](https://github.com/manncz/aeis-aux-rct/)
   - `var_names.csv`: Cross-walk for cleaning variable names in AEIS data
 - `scripts/`: all tutorial scripts to be run in order
   - `_installPackages.R`: contains code to install all packages used in tutorial scripts
@@ -38,14 +37,12 @@ The contents are organized as follows:
 ## Use
 
 **Option 1 -- Run Everything:**
-1. Follow the instructions from `README.md` in the `input/` directory to download the input AEIS data `MS_data_public.Rdata` from Google Drive.
-2. Run `00-data-setup.Rmd`
+1. Run `00-data-setup.Rmd`
 3. Now the scripts can be run in any order, although we will work through the scripts in order for the workshop
 
 
 **Option 2 -- Skip Data Build:**
-1. Follow the instructions from `README.md` in the `data/` directory to download the processed data `rct_aux_dat.Rdata` and `rct_schools.Rdata` from Google Drive.
-2. Now you can skip `00-data-setup.Rmd` and can run the scripts in any order
+1. Skip `00-data-setup.Rmd` and can can still run the scripts in any order because the outputs are already saved in the `data/` directory
 
 **Option 3 -- Run Nothing:**
 1. Read through the compiled scripts in the `scripts/compiled_tutorials/` directory
@@ -53,7 +50,7 @@ The contents are organized as follows:
 
 ## Real-Data Examples
 
-We work through two real-data examples in this workshop - a educational school-level field experiment (AEIS data) and educational A/B tests (ASSISTMENTS).
+We work through two real-data examples in this workshop - a educational school-level field experiment (AEIS data) and educational A/B tests (ASSISTments).
 
 #### AEIS Data and Synthetic RCT
 
@@ -63,7 +60,7 @@ We use an already processed version of the AEIS data for this tutorial (`MS_data
 
 Inspired by the Cognitive Tutor Algebra I Study (Pane et. al, 2014), we construct a synthetic RCT with the middle schools included in the Texas AEIS data for this workshop.
 
-#### ASSISTMENTS Data
+#### ASSISTments Data
 
 You then have the chance to implement what you learned in `04-efect-estABtest.Rmd`, with data from real educational A/B tests.
 
@@ -78,6 +75,8 @@ https://www.degruyter.com/document/doi/10.1515/jci-2022-0011/html.
 Kosuke Imai. *Variance identification and efficiency analysis in randomized experiments under the matched-pair design.* Statistics in Medicine, 27(24):4857–4873, October 2008. URL: https://onlinelibrary.wiley.com/doi/10.1002/sim.3337.
 
 Kosuke Imai and Zhichao Jiang. *`experiment:` R Package for Designing and Analyzing Randomized Experiments.* April 2022. URL https://cran.r-project.org/web/packages/experiment/index.html.
+
+Charlotte Z. Mann, Adam C. Sales, and Johann A. Gagnon-Bartsch. *A General Framework for Design-Based Treatment Effect Estimation in Paired Cluster-Randomized Experiments*. Preprint. July 2024. URL: https://arxiv.org/abs/2407.01765.
 
 John F. Pane, Beth Ann Griffin, Daniel F. McCaffrey, and Rita Karam. *Effectiveness of Cognitive Tutor Algebra I at Scale.* Educational Evaluation and Policy Analysis, 36(2):
 127–144, June 2014. URL: https://doi.org/10.3102/0162373713507480.
