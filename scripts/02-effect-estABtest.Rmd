@@ -106,7 +106,7 @@ covariates = abdat[,grep("pattern",names(abdat))]
 
 ```
 
-### Estimate the average effect
+### Step 4: Estimate the average effect
 
 One more ingredient is necessary to estimate effects from a Bernoulli RCT:
 the probability of a unit being assigned to the treatment condition.
@@ -132,11 +132,11 @@ confint(est_loop)
 
 The file "auxiliaryLogData.csv" has data for a separate group of students who worked on a problem set similar to the one featured in the RCT. The dataset includes assignment-level student performance measurements for the previous five assignments each student worked on, along with student-level averages.
 ```{r}
-aux_logdata <- read.csv('../auxiliaryLogData.csv')
+aux_logdata <- read.csv('../data/auxiliaryLogData.csv')
 ```
 The dataset "rctLogData.csv" includes the same predictors for the students in the RCT:
 ```{r}
-rct_logdata <- read.csv('../rctLogData.csv')
+rct_logdata <- read.csv('../data/rctLogData.csv')
 ```
 
 ### Step 2: Train a prediction algorithm 
@@ -264,11 +264,31 @@ To display the results, use the `coeftest()` function:
 coeftest(hteMod)
 ```
 
-For comparison, we will use an model that includes interactions of the covariates with the treatment assignment. Note that the coefficients of treatment assignment and its interactions are analogues to those above.
+
+Note that you can use any regression model to estimate the CATE this way. 
+
+For instance, you can also use regression trees:
 ```{r}
-# First add a column for the treatment assignments into the data frame
-# then use lm(y ~ . * z, data = data) similar to above,
-# where z is the column name of the treatment assignment.
+if(!require(rpart)){
+  install.packages('rpart')
+  library(rpart)
+}
+cart <- rpart(tauhat~.,data=covariates)
+cart
 ```
 
-Note that you can use any regression model to estimate the CATE this way. We are using a linear model here for interpretation's sake.
+Plot the fitted model:
+```{r}
+if(!require(rpart.plot)){
+  install.packages('rpart.plot')
+  library(rpart.plot)
+}
+rpart.plot(cart)
+```
+
+
+Now, choose your own model, using `lm()`, `rpart()` or any other function you know of, to estimate heterogeneous effects:
+
+```{r}
+## put code here
+```
