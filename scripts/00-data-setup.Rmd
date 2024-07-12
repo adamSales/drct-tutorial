@@ -188,3 +188,14 @@ aux_dat = out_ms %>%
 
 save(rct_dat, aux_dat, covs_ms_noprep, file = "../data/rct_aux_dat.Rdata")
 ```
+
+```{r}
+#subset to specific variable names for Shiny app demo 
+subset_var_names <- read.csv("../input/subset_var_names.csv", col.names = "col_name")
+
+aux_dat_small <- aux_dat %>%
+  select(subset_var_names$col_name)
+
+write.csv(aux_dat_small, "../data/aux_dat_small.csv", row.names = FALSE)
+```
+

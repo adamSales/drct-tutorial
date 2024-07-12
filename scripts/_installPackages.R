@@ -7,4 +7,5 @@ needed.packages <- c("dplyr", "tidyr", "devtools","randomForest","optmatch",
 new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
-devtools::install_github("manncz/dRCT",dep=TRUE,upgrade=FALSE)
+devtools::install_github("manncz/dRCT",dependencies = TRUE,upgrade = FALSE)
+devtools::install_github("jaylinlowe/dRCTpower",dependencies = TRUE,upgrade = FALSE)

@@ -1,7 +1,7 @@
 Treatment Effect Estimation Integrating Auxiliary Data with `dRCT`
 Package
 ================
-2024-07-10
+2024-07-12
 
 ``` r
 library(dplyr)
@@ -44,13 +44,17 @@ aux_mod_dat <- aux_dat %>%
   select(-GRDSPAN) %>%
   select(!starts_with("out"))
 
-aux.rf <- randomForest(taks08 ~ . -CAMPUS, data = aux_mod_dat)
+# we do not recommend re-running the auxiliary model because it takes a long time to run
+#aux.rf <- randomForest(taks08 ~ . -CAMPUS, data = aux_mod_dat)
 ```
 
 From our run, we get an MSE of 66.4 and R-squared of 65.84 with the
 auxiliary schools.
 
 ## Step 2: Generate Auxiliary Predictions for RCT Sample
+
+**Note:** Don’t try to run the code in Step 2 unless you un-commented
+and ran the previous code chunk.
 
 It only takes one line of code to then generate predictions for the RCT
 sample:
@@ -142,7 +146,7 @@ loop(Y = rct_dat$taks08, Tr = rct_dat$TrBern, Z = rct_dat$premA, yhat = rct_dat$
 ```
 
     ##        Estimate Std. Error  t value Pr(>|t|)
-    ## ATE: -0.3264075  2.1989998 -0.14843  0.88274
+    ## ATE: -0.3246524  2.1979000 -0.14771  0.88331
 
 Given what we saw above, it makes sense that these point and standard
 error estimates are similar to just adjusting with the auxiliary

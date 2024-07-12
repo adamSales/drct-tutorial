@@ -50,12 +50,15 @@ aux_mod_dat <- aux_dat %>%
   select(-GRDSPAN) %>%
   select(!starts_with("out"))
 
-aux.rf <- randomForest(taks08 ~ . -CAMPUS, data = aux_mod_dat)
+# we do not recommend re-running the auxiliary model because it takes a long time to run
+#aux.rf <- randomForest(taks08 ~ . -CAMPUS, data = aux_mod_dat)
 ```
 
 From our run, we get an MSE of 66.4 and R-squared of 65.84 with the auxiliary schools.
 
 ## Step 2: Generate Auxiliary Predictions for RCT Sample
+
+**Note:** Don't try to run the code in Step 2 unless you un-commented and ran the previous code chunk.
 
 It only takes one line of code to then generate predictions for the RCT sample: 
 
