@@ -19,9 +19,11 @@ The contents are organized as follows:
   - Field test example data (AEIS) outputted by `00-data-setup.Rmd`:
     - `rct_aux_dat.Rdata`
     - `rct_schools.Rdata`
+    - `aux_dat_small.csv`: Smaller version of `rct_aux_dat.Rdata` with some covariates removed for the Shiny app demo. 
 - `input/`: input data files
   - `MS_data_public.Rdata`: AEIS data from [manncz/aeis-aux-rct/](https://github.com/manncz/aeis-aux-rct/)
   - `var_names.csv`: Cross-walk for cleaning variable names in AEIS data
+  - `subset_var_names.csv`: Names of covariates to be used in creating the smaller version of the auxiliary data for the Shiny app demo
 - `scripts/`: all tutorial scripts to be run in order
   - `_installPackages.R`: contains code to install all packages used in tutorial scripts
   - `00-data-setup.Rmd`
@@ -30,6 +32,7 @@ The contents are organized as follows:
   - `03-integrate-aux.Rmd`
   - `04-effect-estABtest.Rmd`
   - `04-effect-estABtestSolution.Rmd`
+  - `05-heterogeneousEffects.Rmd`
   - `compiled_tutorials/`: compiled versions of all tutorial scripts
 - `temp/`: intermediate data artifacts
   - `auxpred.Rdata`: auxiliary predictions to be used in `03-integrate-aux.Rmd`
@@ -62,7 +65,7 @@ Inspired by the Cognitive Tutor Algebra I Study (Pane et. al, 2014), we construc
 
 #### ASSISTments Data
 
-You then have the chance to implement what you learned in `04-efect-estABtest.Rmd`, with data from real educational A/B tests.
+You then have the chance to implement what you learned in `04-effect-estABtest.Rmd`, with data from real educational A/B tests.
 
 
 ## References
@@ -76,10 +79,14 @@ Kosuke Imai. *Variance identification and efficiency analysis in randomized expe
 
 Kosuke Imai and Zhichao Jiang. *`experiment:` R Package for Designing and Analyzing Randomized Experiments.* April 2022. URL https://cran.r-project.org/web/packages/experiment/index.html.
 
+Jaylin Lowe, Charlotte Mann, Jiaying Wang, Adam Sales and Johann Gagnon-Bartsch. *Power Calculations for Randomized Controlled Trials with Auxiliary Observational Data* EDM2024. 
+
 Charlotte Z. Mann, Adam C. Sales, and Johann A. Gagnon-Bartsch. *A General Framework for Design-Based Treatment Effect Estimation in Paired Cluster-Randomized Experiments*. Preprint. July 2024. URL: https://arxiv.org/abs/2407.01765.
 
 John F. Pane, Beth Ann Griffin, Daniel F. McCaffrey, and Rita Karam. *Effectiveness of Cognitive Tutor Algebra I at Scale.* Educational Evaluation and Policy Analysis, 36(2):
 127–144, June 2014. URL: https://doi.org/10.3102/0162373713507480.
+
+Duy Pham, Kirk Vanacore, Adam Sales and Johann Gagnon-Bartsch. *LOOL: Towards Personalization with Flexible & Robust Estimation of Heterogeneous Treatment Effects* EDM2024.
 
 Texas Education Agency. *Academic Excellence Indicator System*. 2020. URL: https://rptsvr1.tea.texas.gov/perfreport/aeis/index.html. Accessed on 2/12/2024.
 
