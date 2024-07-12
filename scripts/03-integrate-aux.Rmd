@@ -50,7 +50,8 @@ aux_mod_dat <- aux_dat %>%
   select(-GRDSPAN) %>%
   select(!starts_with("out"))
 
-aux.rf <- randomForest(taks08 ~ . -CAMPUS, data = aux_mod_dat)
+# we do not recommend re-running the auxiliary model because it takes a long time to run
+#aux.rf <- randomForest(taks08 ~ . -CAMPUS, data = aux_mod_dat)
 ```
 
 From our run, we get an MSE of 66.4 and R-squared of 65.84 with the auxiliary schools.
