@@ -7,3 +7,4 @@ new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Pa
 if(length(new.packages)) install.packages(new.packages)
 
 devtools::install_github("manncz/dRCT")
+devtools::install_github("jaylinlowe/dRCTpower")
