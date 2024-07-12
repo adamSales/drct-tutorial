@@ -5,7 +5,8 @@ output: html_notebook
 
 This notebook will guide you through the process of estimating a treatment effect from a randomized A/B test, using the new `dRCT` package in `R`.
 
-## Preliminaries
+## Estimating an Average Effect with Just RCT data
+
 
 ### Step 0: Install the `dRCT` package (only do this once)
 
@@ -13,7 +14,7 @@ The package only needs to be installed once--after that you can skip this step
 
 ```{r}
 if(!require(devtools)) install.packages('devtools')
-if(!require(dRCT)) devtools::install_github("manncz/dRCT")
+if(!require(dRCT)) devtools::install_github("manncz/dRCT",upgrade=FALSE)
 ```
 
 ### Step 1: Load in the package 
@@ -24,7 +25,7 @@ library(dRCT)
 
 ### Step 2: Load and Explore the Dataset
 ```{r}
-abdat <- read.csv('../abTestExample.csv')
+abdat <- read.csv('../data/abTestExample.csv')
 ```
 
 You may want to use one or more of these functions to explore the dataset's structure:
@@ -36,7 +37,7 @@ head(abdat) ## first 6 rows
 ```
 
 
-More information on the dataset is available [here](https://github.com/manncz/edm-rct-tutorial/blob/main/data/ABexampleDataDictionary.md).
+More information on the dataset is available [here](https://github.com/manncz/edm-rct-tutorial/blob/main/data/README.md).
 
 
 ### Step 3: Extract the necessary variables from the dataset
@@ -105,7 +106,7 @@ covariates = abdat[,grep("pattern",names(abdat))]
 
 ```
 
-## Estimate an effect
+### Estimate the average effect
 
 One more ingredient is necessary to estimate effects from a Bernoulli RCT:
 the probability of a unit being assigned to the treatment condition.
@@ -197,7 +198,7 @@ yhat <- predict(auxmod,rct_logdata)
 yhat <- yhat$pred[,1]
 ```
 
-### Step 3: Use `loop`, along with the Auxiliary predictions, to estimate effects
+### Step 4: Use `loop`, along with the Auxiliary predictions, to estimate effects
 
 The call is the same as before, except we use the `reloop` prediction algorithm, and 
 include `yhat` as an additional argument:
@@ -222,3 +223,52 @@ print(est_reloop)
 confint(est_reloop)
 ```
 
+## Estimating heterogeneous treatment effects (HTE)
+
+### Step 1: Extract ITE estimates 
+You can retrieve the estimated individual treatment effects (ITE) using the following command:
+```{r}
+tauhat <- getITE(est_reloop)
+```
+
+### Step 2: Fit moderation model
+
+
+We will run a linear regression model, regressing the estimated ITE on the covariates to estimate the conditional average treatment effects (CATE). 
+
+
+Simply run the model below:
+```{r}
+# Use 
+hteMod=lm(tauhat ~ ., data = covariates) 
+```
+### Step 3: Display and interpret the results:
+
+To get the standard errors right, we need the `sandwich` package:
+```{r}
+if(!require(sandwich)){
+  install.packages("sandwich")
+  library(sandwich)
+}
+```
+To display the coefficients with standard errors and p-values, use the `lmtest` package:
+```{r}
+if(!require(lmtest)){
+  install.packages("lmtest")
+  library(lmtest)
+}
+```
+
+To display the results, use the `coeftest()` function:
+```{r}
+coeftest(hteMod)
+```
+
+For comparison, we will use an model that includes interactions of the covariates with the treatment assignment. Note that the coefficients of treatment assignment and its interactions are analogues to those above.
+```{r}
+# First add a column for the treatment assignments into the data frame
+# then use lm(y ~ . * z, data = data) similar to above,
+# where z is the column name of the treatment assignment.
+```
+
+Note that you can use any regression model to estimate the CATE this way. We are using a linear model here for interpretation's sake.
