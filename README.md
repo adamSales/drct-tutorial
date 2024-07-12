@@ -19,9 +19,11 @@ The contents are organized as follows:
   - Field test example data (AEIS) outputted by `00-data-setup.Rmd`:
     - `rct_aux_dat.Rdata`
     - `rct_schools.Rdata`
+    - `aux_dat_small.csv`: Smaller version of `rct_aux_dat.Rdata` with some covariates removed for the Shiny app demo. 
 - `input/`: input data files
   - `MS_data_public.Rdata`: AEIS data from [manncz/aeis-aux-rct/](https://github.com/manncz/aeis-aux-rct/)
   - `var_names.csv`: Cross-walk for cleaning variable names in AEIS data
+  - `subset_var_names.csv`: Names of covariates to be used in creating the smaller version of the auxiliary data for the Shiny app demo
 - `scripts/`: all tutorial scripts to be run in order
   - `_installPackages.R`: contains code to install all packages used in tutorial scripts
   - `00-data-setup.Rmd`
