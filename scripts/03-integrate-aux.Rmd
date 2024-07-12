@@ -58,6 +58,8 @@ From our run, we get an MSE of 66.4 and R-squared of 65.84 with the auxiliary sc
 
 ## Step 2: Generate Auxiliary Predictions for RCT Sample
 
+**Note:** Don't try to run the code in Step 2 unless you un-commented and ran the previous code chunk.
+
 It only takes one line of code to then generate predictions for the RCT sample: 
 
 ```{r, eval = F}
