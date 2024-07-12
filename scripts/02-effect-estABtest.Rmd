@@ -8,20 +8,26 @@ This notebook will guide you through the process of estimating a treatment effec
 ## Estimating an Average Effect with Just RCT data
 
 
-### Step 0: Install the `dRCT` package (only do this once)
+### Step 0: Install the required packages (only do this once)
 
-The package only needs to be installed once--after that you can skip this step
-
+Install all the necessary packages:
 ```{r}
-if(!require(devtools)) install.packages('devtools')
-if(!require(dRCT)) devtools::install_github("manncz/dRCT",upgrade=FALSE)
+needed.packages <- c("devtools","SuperLearner","ranger")
+new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+if(!require(dRCT)) devtools::install_github("manncz/dRCT",upgrade = FALSE)
 ```
 
-### Step 1: Load in the package 
-(run this line each time you start `R`)
+
+### Step 1: Load in the required packages:
+
 ```{r}
 library(dRCT)
+library(SuperLearner)
+library(ranger)
 ```
+
 
 ### Step 2: Load and Explore the Dataset
 ```{r}
@@ -114,7 +120,8 @@ In this case, $Pr(Tr_i=1)=0.5$.
 
 Then, to estimate effects, use the `loop()` function:
 ```{r}
-est_loop=loop(Y=Y, Tr=Tr,Z=covariates,p=0.5)
+# est_loop=loop( [specify Y, Tr, Z (i.e. covariates), and
+# p (probability of assignment to treatment)] )
 ```
 To see the estimate, standard error, and a p-value testing the null hypothesis
 of no average effect, use `print()`:
@@ -144,11 +151,7 @@ Use the auxiliary dataset to train a prediction algorithm, predicting `completio
 
 Here, you may use any algorithm you want--you may even use the auxiliary data to compare the results of several algorithms and then choose between them or ensemble them. 
 
-In fact, the `SuperLearner` package does that all for you, so we'll use that. You may need to install it, but that should go quickly:
-```{r}
-if(!require(SuperLearner)) install.packages('SuperLearner')
-library(SuperLearner)
-```
+In fact, the `SuperLearner` package does that all for you, so we'll use that. 
 
 The way `SuperLearner` works is that you provide a matrix or dataframe of predictors, `X`, and outcome `Y`, and a list of candidate prediction algorithms. To see the built-in options, run:
 ```{r}
@@ -158,9 +161,8 @@ listWrappers()
 Choose your favorite algorithms from this list (bear in mind, some may require you to install yet more packages, and/or take a long time to run -- ahem, `SL.nnet`)
 
 For instance, say we want to try regression, ridge regression, and 
-a fast version of random forest called `ranger` (which may need to be installed). Then run:
+a fast version of random forest called `ranger`. Then run:
 ```{r}
-if(!require(ranger)) install.packages('ranger')
 algs <- c('SL.lm','SL.ridge','SL.ranger')
 ```
 Go ahead and edit that code, and re-run, if you want to try something different!
@@ -200,10 +202,11 @@ yhat <- yhat$pred[,1]
 
 ### Step 4: Use `loop`, along with the Auxiliary predictions, to estimate effects
 
-The call is the same as before, except we use the `reloop` prediction algorithm, and 
-include `yhat` as an additional argument:
+The call is the same as before, except we use the `pred=reloop` prediction algorithm, and 
+include `yhat=yhat` as an additional argument:
 ```{r}
-est_reloop <- loop(Y = Y, Tr = Tr, Z=covariates,p=0.5, pred = reloop, yhat=yhat)
+## fill in:
+# est_reloop <- 
 
 print(est_reloop)
 confint(est_reloop)
@@ -215,80 +218,13 @@ first load in the predictions from that fancy-schmancy deep neural net:
 ```{r}
 yhat_nn <- read.csv('../data/yhatNN.csv')[,1]
 ```
-Then re-run the estimation routine:
+Then re-run the estimation routine: (fill in)
 ```{r}
-est_reloop <- loop(Y = Y, Tr = Tr, Z=covariates,p=0.5, pred = reloop, yhat=yhat_nn)
+# est_reloop <- 
 
 print(est_reloop)
 confint(est_reloop)
-```
 
-## Estimating heterogeneous treatment effects (HTE)
-
-### Step 1: Extract ITE estimates 
-You can retrieve the estimated individual treatment effects (ITE) using the following command:
-```{r}
-tauhat <- getITE(est_reloop)
-```
-
-### Step 2: Fit moderation model
-
-
-We will run a linear regression model, regressing the estimated ITE on the covariates to estimate the conditional average treatment effects (CATE). 
-
-
-Simply run the model below:
-```{r}
-# Use 
-hteMod=lm(tauhat ~ ., data = covariates) 
-```
-### Step 3: Display and interpret the results:
-
-To get the standard errors right, we need the `sandwich` package:
-```{r}
-if(!require(sandwich)){
-  install.packages("sandwich")
-  library(sandwich)
-}
-```
-To display the coefficients with standard errors and p-values, use the `lmtest` package:
-```{r}
-if(!require(lmtest)){
-  install.packages("lmtest")
-  library(lmtest)
-}
-```
-
-To display the results, use the `coeftest()` function:
-```{r}
-coeftest(hteMod)
-```
-
-
-Note that you can use any regression model to estimate the CATE this way. 
-
-For instance, you can also use regression trees:
-```{r}
-if(!require(rpart)){
-  install.packages('rpart')
-  library(rpart)
-}
-cart <- rpart(tauhat~.,data=covariates)
-cart
-```
-
-Plot the fitted model:
-```{r}
-if(!require(rpart.plot)){
-  install.packages('rpart.plot')
-  library(rpart.plot)
-}
-rpart.plot(cart)
-```
-
-
-Now, choose your own model, using `lm()`, `rpart()` or any other function you know of, to estimate heterogeneous effects:
-
-```{r}
-## put code here
+## save the results for later
+save(abdat, covariates,est_reloop,files='abResults.RData')
 ```

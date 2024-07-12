@@ -1,0 +1,120 @@
+---
+title: "Estimating Heterogeneous Effects from a Bernoulli Experiment: Solutions"
+output: html_notebook
+---
+  
+
+### Step 0: Preliminaries
+
+Install all the necessary packages:
+```{r}
+needed.packages <- c("devtools","sandwich","lmtest",
+                     "rpart","rpart.plot")
+new.packages <- needed.packages[!(needed.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+if(!require(dRCT)) devtools::install_github("manncz/dRCT",upgrade = FALSE)
+```
+
+Load in the required packages:
+```{r}
+library(dRCT)
+library(sandwich)
+library(lmtest)
+library(rpart)
+library(rpart.plot)
+```
+
+This process builds off of the average effect estimation from earlier. 
+If you are just opening `R`, you may need to either load in the earlier results, or calculate them from scratch:
+```{r}
+if(!exists("est_reloop")){
+  if(file.exists("abResults.RData")){
+    load("abResults.RData")
+  } else{
+    abdat <- read.csv('../data/abTestExample.csv')
+    Tr= abdat$video
+    Y = abdat$completion
+    covariates= abdat[,2:10]
+    yhat_nn <- read.csv('../data/yhatNN.csv')[,1]
+    est_reloop <- loop(Y = Y, Tr = Tr, Z=covariates,p=0.5, pred = reloop, yhat=yhat_nn)
+    save(abdat,covariates,est_reloop,file='abResults.RData')
+  }
+}
+```
+    
+
+## Estimating heterogeneous treatment effects (HTE)
+
+### Step 1: Extract ITE estimates 
+You can retrieve the estimated individual treatment effects (ITE) using the following command:
+
+```{r}
+tauhat <- getITE(est_reloop)
+```
+
+### Subgroup effects
+We can estimate effects in a subgroup by just taking the mean of `tauhat` for 
+all members of that subgroup. 
+
+Say we are interested in the effect for students whose prior median time on task is below the median:
+```{r}
+lowPriorTime <- covariates$student_prior_median_time_on_task<
+  median(covariates$student_prior_median_time_on_task)
+```
+
+Then the estimated effect for those students is
+```{r}
+mean(tauhat[lowPriorTime])
+```
+(`R` note: since `lowPriorTime` is a boolean (logical) variable, `tauhat[lowPriorTime]` is the sub-vector of `tauhat` for which `lowPriorTime` is TRUE.)
+
+For inference, use the `t.test()` function:
+```{r}
+t.test(tauhat[lowPriorTime])
+```
+`t.test()` can also be used to test the difference between two subgroup effects:
+```{r}
+t.test(tauhat~lowPriorTime)
+```
+
+### More complex moderation models
+
+
+We will run a linear regression model, regressing the estimated ITE on the covariates to estimate the conditional average treatment effects (CATE). 
+
+
+Simply run the model below:
+```{r}
+hteMod=lm(tauhat ~ ., data = covariates) 
+```
+### Display and interpret the results:
+
+To get the standard errors right, we'll use heteroscedasticity-consistent standard errors from the `sandwich` package, and a helper function from the `lmtest` package:
+
+```{r}
+coeftest(hteMod,vcov. = vcovHC)
+```
+
+
+Note that you can use any regression model to estimate the CATE this way. 
+
+For instance, you can also use regression trees:
+```{r}
+cart <- rpart(tauhat~.,data=covariates)
+```
+
+Plot the fitted model:
+(with some extra code to shorten the variable names)
+```{r}
+prp(cart, 
+    split.fun=function(x,labs,digits,varlen,faclen)  
+          gsub("student_prior_","",labs))
+```
+
+
+Now, choose your own model, using `lm()`, `rpart()` or any other function you know of, to estimate heterogeneous effects:
+  
+```{r}
+## put code here
+```
