@@ -1,6 +1,7 @@
 # Site title and subtitle. This is used in _includes/header.html
 title: 'Tools for Planning & Analyzing Randomized Controlled Trials & A/B Tests'
 subtitle: 'SREE 2024 Workshop'
+theme: jekyll-theme-minimal
 
 # Enable/show navigation. There are there options:
 #   0 - always hide
