@@ -6,7 +6,53 @@ This repository contains the materials for the SREE 2024 half day tutorial "Tool
 
 The tutorial focuses on how to use the current version of the `dRCT` package in `R`.
 
-## Contents
+## Repo Contents
+ 1. [Preliminaries--what you will need to fully participate](#preliminaries)
+ 1. [Workshop Slides (pdf)](https://github.com/adamSales/drct-tutorial/blob/main/slides.pdf)
+ 2. [Interactive `R` Scripts](https://github.com/adamSales/drct-tutorial/tree/main/scripts)
+ 3. [Example Datasets](https://github.com/adamSales/drct-tutorial/tree/main/data)
+
+## Preliminaries
+
+To work with the code, participants need to:
+
+ 1) [Download and Install R and RStudio](#downloading-and-installing-r-and-rstudio)
+ 2) [Clone the Github repository `adamSales/drct-tutorial/`](#cloning-tutorial-github-repo)
+ 3) [Install required packages]
+
+### Downloading and Installing R and RStudio
+ 1. Follow the instructions [here](https://cran.rstudio.com/) to download and install R. 
+ 2. Follow instructions [here](https://posit.co/download/rstudio-desktop/) to download and install RStudio
+
+### Cloning Tutorial Github Repo
+"Cloning" means to make a local version of the remote Github repository on your computer. 
+
+There are a couple of options for how to do this:
+
+#### Option 1 : Command Line
+
+In the Terminal, navigate to a directory where you would like the tutorial directory to live, then run command:  
+```
+git clone https://github.com/adamSales/drct-tutorial.git
+```
+You should now have a directory drct-tutorial/
+
+#### Option 2: Download .zip File from GitHub
+
+Just [click here](https://github.com/adamSales/drct-tutorial/archive/refs/heads/main.zip), or:
+
+ 1. Go to (https://github.com/adamSales/drct-tutorial)
+ 2. Click the green <>Code button at the top right corner (see below)
+ 3. Select Download ZIP
+ 4. Unzip the downloaded file drct-tutorial-main.zip by double clicking on it
+
+### Installing Required Packages
+All scripts include code to install necessary packages. However, to save time, it would be helpful to run the code in [scripts/_installPackages.R](https://github.com/adamSales/drct-tutorial/blob/main/scripts/_installPackages.R) while the workshop is starting.
+If you are in RStudio, you can open the script and select "Source" on the upper-right of the panel.
+
+
+
+## Detailed Contents
 The contents are organized as follows:
 
 - `data/`: processed data files and documentation
@@ -96,4 +142,4 @@ Edward Wu and Johann A. Gagnon-Bartsch. *Design-Based Covariate Adjustments in P
 
 
 Edward Wu, Adam C. Sales, Charlotte Z. Mann, and Johann A. Gagnon-Bartsch. *`dRCT`*,
-December 2023. URL: https://github.com/manncz/dRCT.
+December 2023. URL: https://github.com/adamSales/dRCT.
