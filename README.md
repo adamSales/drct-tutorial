@@ -16,9 +16,9 @@ The tutorial focuses on how to use the current version of the `dRCT` package in 
 
 To work with the code, participants need to:
 
- 1) [Download and Install R and RStudio](#downloading-and-installing-r-and-rstudio)
- 2) [Clone the Github repository `adamSales/drct-tutorial/`](#cloning-tutorial-github-repo)
- 3) [Install required packages]
+ 1. [Download and Install R and RStudio](#downloading-and-installing-r-and-rstudio)
+ 2. [Clone the Github repository `adamSales/drct-tutorial/`](#cloning-tutorial-github-repo)
+ 3. [Install required packages]
 
 ### Downloading and Installing R and RStudio
  1. Follow the instructions [here](https://cran.rstudio.com/) to download and install R. 
