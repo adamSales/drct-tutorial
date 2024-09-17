@@ -2,7 +2,7 @@
 
 
 
-This repository contains the materials for the EDM 2024 half day tutorial "Tools for Planning &amp; Analyzing Randomized Controlled Trials &amp; A/B Tests" on 7/14/24. This tutorial is organized by Adam Sales, Johann Gagnon-Bartsch, Duy Pham, Charlotte Mann, and Jaylin Lowe.
+This repository contains the materials for the SREE 2024 half day tutorial "Tools for Planning &amp; Analyzing Randomized Controlled Trials &amp; A/B Tests" on 9/18/24. This tutorial is organized by Adam Sales, Johann Gagnon-Bartsch, Duy Pham, Charlotte Mann, and Jaylin Lowe.
 
 The tutorial focuses on how to use the current version of the `dRCT` package in `R`.
 
